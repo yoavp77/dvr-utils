@@ -1,0 +1,11 @@
+#!/bin/bash
+# this script organizes your photos in directories according to the date they were taken.
+# VERY MESSY
+
+for file in `ls -1`; do
+        month=`identify -verbose $file  | grep -i DateTimeOri | awk '{print $2}' | awk -F: '{print $1"-"$2}'`
+        mkdir -p $month
+        mv $file $month;
+done
+
+#for file in `ls -1`; do month=`ffmpeg -i $file -f ffmetadata  2>&1| grep date |head -1 | awk '{print $NF}' | awk -F- '{print $1"-"$2}'`; mkdir -p $month; mv $file $month; done
