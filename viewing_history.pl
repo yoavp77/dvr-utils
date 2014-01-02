@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 # script to generate a log of everything you watch on sagetv. run this for a few weeks
 # in cron to see whether or not you can cancel cable.
-#
+# 
+# I think there's a debug setting in sagetv that needs to be enabled to be able to use this.
 
 $inputfile="/opt/sagetv/server/sagetv_*";
 open (FIN,"cat $inputfile|") || die "unable to open $inputfile\n";
