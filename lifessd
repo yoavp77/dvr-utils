@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script to point to look at remaining life on an SSD drive. I added the following 
+# script to look at remaining life on an SSD drive. I added the following 
 # line to my .bashrc file:
 # echo "SSD life: `cat /etc/lifessd`"
 
