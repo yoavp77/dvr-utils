@@ -1,0 +1,22 @@
+#!/bin/bash
+# use this script to email an ebook (in .mobi format) to your kindle account to make it accessible (and syncable) 
+# across your kindle devices
+
+if [ $# -ne 1 ]; then
+        echo "usage: `basename $0` <mobi file>"
+        exit 0
+fi
+
+
+echo "-----------" >> /var/log/books/books.log
+echo "converting $1" >> /var/log/books/books.log
+echo "-----------" >> /var/log/books/books.log
+echo "" >> /var/log/books/books.log
+mobi2mobi --delexthtype 501 "$1" --outfile /tmp/file1.$$ >> /var/log/books/books.log 2>&1
+mobi2mobi --exthtype 501 --exthdata "EBOK" /tmp/file1.$$ --outfile /tmp/file2.$$ >> /var/log/books/books.log 2>&1
+mobi2mobi --exthtype 113 --exthdata `date '+%s'` /tmp/file2.$$ --outfile /tmp/file3.$$.mobi >> /var/log/books/books.log 2>&1
+echo "" >> /var/log/books/books.log
+echo "" >> /var/log/books/books.log
+
+date | mutt -a "/tmp/file3.$$.mobi" -- example@kindle.com
+rm -f /tmp/file?.$$*
