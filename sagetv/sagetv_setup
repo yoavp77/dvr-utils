@@ -1,0 +1,71 @@
+#!/bin/bash
+
+if [ "$1" != "keep" ]; then
+  time=_$$_$(date '+%Y-%m-%d_%H_%M')
+else
+  time=""
+fi
+
+# prep
+dir="sagetv${time}"
+buildroot=/usr/local/src/sagetv/
+sagedir=/opt/sagetv/server
+mkdir -p $sagedir
+mkdir -p $buildroot
+mkdir -p /var/media
+ln -s /recordings /var/media
+
+# install some deps
+yum -y --enablerepo=extras install epel-release
+rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+yum -y install java-1.8.0-openjdk-devel libavc1394-devel libiec61883-devel kernel-devel gcc gcc-c++ zlib-devel freetype-devel libtool automake autoconf yasm vim ffmpeg faad2-libs git net-tools vim jq
+export JDK_HOME=/usr/lib/jvm/java/
+
+git clone https://github.com/emericg/OpenSubtitlesDownload.git /usr/local/sub
+
+# install hdhr service
+hdhr_build=/usr/local/src/hdhr
+hdhr_dir=/opt/sagetv/hdhomerun
+hdhr_cmd=hdhomerun_config
+hdhr_file=hdhomerun_config.tgz
+mkdir -p $hdhr_build $hdhr_dir
+yum -y install perl-IPC-Run perl-Proc-Daemon wget
+git clone https://github.com/jwittkoski/prime_encoder.git $hdhr_dir
+wget http://download.silicondust.com/hdhomerun/libhdhomerun_20180817.tgz -O $hdhr_build/$hdhr_file
+cd $hdhr_build
+tar xf $hdhr_file
+cd libhdhomerun
+make
+cp $hdhr_cmd $hdhr_dir/
+device=`$hdhr_dir/$hdhr_cmd discover | awk '{print $3}'`
+sed "s/11112222/$device/g" $hdhr_dir/prime_encoder > /tmp/prime.$$
+mv -f /tmp/prime.$$ $hdhr_dir/prime_encoder
+ln -s /usr/bin/ffmpeg $hdhr_dir/ffmpeg.2013.09.01
+
+cd $buildroot
+echo "* cloning sagetv..."
+git clone https://github.com/google/sagetv.git $dir
+cd $dir/build
+echo "* building sagetv..."
+./buildall.sh
+ls -l $buildroot/$dir/build/sagetv-server*
+echo "* creating $sagedir..."
+mkdir -p $sagedir
+cd $sagedir
+echo "* unpacking sagetv server..."
+tar xf $buildroot/$dir/build/sagetv-server*.tar.gz
+echo "* copying config and data backups..."
+cp /var/tmp/Wiz.bin $sagedir/
+cp /var/tmp/Sage.properties $sagedir/
+local_ip=`ifconfig  | grep inet\ | awk '{print $2}' | grep -v 127.0.0.1`
+echo "SED TO $local_ip"
+sed "s/192.168.1.11/$local_ip/g" Sage.properties > Sage.properties.new
+cp /var/tmp/sdauth $sagedir/
+echo "* unpacking clients..."
+tar xf /var/tmp/clients.tar
+
+for service in prime_encoder sagetv; do 
+  mv -f /var/tmp/${service}.service /usr/lib/systemd/system/
+  systemctl enable ${service}
+done
