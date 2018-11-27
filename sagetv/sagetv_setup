@@ -57,10 +57,8 @@ echo "* unpacking sagetv server..."
 tar xf $buildroot/$dir/build/sagetv-server*.tar.gz
 echo "* copying config and data backups..."
 cp /var/tmp/Wiz.bin $sagedir/
-cp /var/tmp/Sage.properties $sagedir/
 local_ip=`ifconfig  | grep inet\ | awk '{print $2}' | grep -v 127.0.0.1`
-echo "SED TO $local_ip"
-sed "s/192.168.1.11/$local_ip/g" Sage.properties > Sage.properties.new
+sed "s/192.168.1.11/$local_ip/g" /var/tmp/Sage.properties > Sage.properties.new
 cp /var/tmp/sdauth $sagedir/
 echo "* unpacking clients..."
 tar xf /var/tmp/clients.tar
