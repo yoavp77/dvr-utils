@@ -4,7 +4,6 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-EnvironmentFile=-/etc/sysconfig/network
 ExecStart=/opt/sagetv/server/startsage
 ExecStop=/opt/sagetv/server/stopsage
 Restart=no
