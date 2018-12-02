@@ -4,10 +4,8 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-EnvironmentFile=-/etc/sysconfig/network
 ExecStart=/usr/bin/perl /opt/sagetv/hdhomerun/prime_encoder
-ExecStop=/usr/bin/pkill -9 -f prime_encoder
-Restart=no
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
